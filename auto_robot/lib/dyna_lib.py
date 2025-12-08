@@ -11,8 +11,8 @@ from dynamixel_sdk import *  # Uses Dynamixel SDK library
 MY_DXL = "X_SERIES"  # X330 (5.0 V recommended), X430, X540, 2X430
 # MY_DXL = 'MX_SERIES'    # MX series with 2.0 firmware update.
 # MY_DXL = 'PRO_SERIES'   # H54, H42, M54, M42, L54, L42
-# MY_DXL = 'PRO_A_SERIES' # PRO series with (A) firmware update.
 # MY_DXL = 'P_SERIES'     # PH54, PH42, PM54
+# MY_DXL = 'PRO_A_SERIES' # PRO series with (A) firmware update.
 # MY_DXL = 'XL320'        # [WARNING] Operating Voltage : 7.4V
 
 # Control table address

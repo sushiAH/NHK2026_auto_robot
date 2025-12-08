@@ -1,4 +1,7 @@
 from setuptools import find_packages, setup
+from setuptools import find_packages, setup
+import os
+from glob import glob
 
 package_name = "auto_robot"
 
@@ -24,7 +27,8 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "auto_robot = auto_robot.auto_robot:main",
+            "twist_subscriber = auto_robot.subscribe_twist:main",
+            "odom_publisher = auto_robot.publish_odom:main",
         ],
     },
 )
