@@ -21,7 +21,7 @@ class twist_subscriber(Node):
 
         self.subscription_twist_joy = self.create_subscription(
             Twist,  # メッセージの型
-            "/cmd_vel_joy",  # 購読するトピック名
+            "/cmd_vel",  # 購読するトピック名
             self.twist_by_joy_callback,  # 呼び出すコールバック関数
             10,
         )
@@ -45,8 +45,8 @@ class twist_subscriber(Node):
         )
 
         # robot_params
-        self.track_width = 0.325  # [m]
-        self.wheel_radius = 0.0275  # [m]
+        self.track_width = 0.27  # [m]
+        self.wheel_radius = 0.05  # [m]
 
         self.joy_straight = 0
         self.joy_w = 0
@@ -55,8 +55,13 @@ class twist_subscriber(Node):
         self.dyna_vel_gain = (0.229 * 2.0 * math.pi * self.wheel_radius) / 60.0
 
         # initialize dynamixel
-        self.dxl_1 = dxl_controller("/dev/ttyUSB0", 0, 3)
-        self.dxl_2 = dxl_controller("/dev/ttyUSB0", 1, 3)
+        self.dxl_1 = dxl_controller("/dev/ttyUSB1", 0, 1)
+        self.dxl_2 = dxl_controller("/dev/ttyUSB1", 1, 1)
+        self.dxl_3 = dxl_controller("/dev/ttyUSB1", 4, 4)
+        self.dxl_4 = dxl_controller("/dev/ttyUSB1", 5, 4)
+
+        self.dxl_3.write_pos(600)
+        self.dxl_4.write_pos(600)
 
     def twist_by_joy_callback(self, msg):
         """Joy topicをsubscribeする
@@ -69,20 +74,20 @@ class twist_subscriber(Node):
 
     def write_to_dyna(self):
         """一定周期でdynamixelに指示値を送信する"""
-        straight = self.joy_straight
+        straight = -self.joy_straight
         w = self.joy_w
 
         V_r = int((2 * straight - w * self.track_width) / (2 * self.dyna_vel_gain))
         V_l = -int((2 * straight + w * self.track_width) / (2 * self.dyna_vel_gain))
         # print(V_r)
 
-        self.dxl_1.write_vel(1, V_r)
-        self.dxl_2.write_vel(2, V_l)
+        self.dxl_1.write_vel(V_r)
+        self.dxl_2.write_vel(V_l)
 
     def publish_feedback(self):
         """一定間隔で、dynamixelからのfeedback_dataを受取、publishする"""
-        V_r = np.int32(self.dxl_1.read_vel(1)) * self.dyna_vel_gain  # rps
-        V_l = -(np.int32(self.dxl_2.read_vel(2)) * self.dyna_vel_gain)
+        V_r = np.int32(self.dxl_1.read_vel()) * self.dyna_vel_gain  # rps
+        V_l = -(np.int32(self.dxl_2.read_vel()) * self.dyna_vel_gain)
 
         feedback_data = DynaFeedback()
 

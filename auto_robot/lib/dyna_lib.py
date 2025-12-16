@@ -70,6 +70,12 @@ elif MY_DXL == "XL320":
     BAUDRATE = 1000000  # Default Baudrate of XL-320 is 1Mbps
 
 
+def from_uint32_to_int32(value):
+    if value > 0x7FFFFFFF:
+        value -= 0x100000000
+    return value
+
+
 def goal_to_4byte(goal):
     """goalをバイト列に分割する
 
@@ -129,9 +135,12 @@ class dxl_controller:
             dxl_controller.portHandler.openPort()
             dxl_controller.portHandler.setBaudRate(BAUDRATE)
 
+        self.initialize_pos = 0
+
         self.dxl_id = dxl_id
+        self.mode = mode
         self.set_torque(0)
-        self.set_mode(mode)
+        self.set_mode()
         self.set_torque(1)
 
     def set_torque(self, torque):
@@ -149,20 +158,30 @@ class dxl_controller:
         )
         return dxl_comm_result, dxl_error
 
-    def set_mode(self, dyna_mode):
-        """dyna_mode     value
+    def set_mode(self):
+        """mode     value
             vel         1
             pos         3
         extended pos    4
         """
 
+        # extended mode　初期化時の位置を保持
+        if self.mode == 4:
+            self.initialize_pos = self.read_pos()
+
         dxl_comm_result, dxl_error = dxl_controller.packetHandler.write1ByteTxRx(
-            dxl_controller.portHandler, self.dxl_id, ADDR_CHANGE_MODE, dyna_mode
+            dxl_controller.portHandler, self.dxl_id, ADDR_CHANGE_MODE, self.mode
         )
         return dxl_comm_result, dxl_error
 
     def write_pos(self, goal_pos):
         # absolute goal_pos range is 0 ~ 4095
+        # extended goal_pos range long
+
+        # extended mode 目標値から初期化時の位置を引く
+        if self.mode == 4:
+            goal_pos = goal_pos + self.initialize_pos
+
         dxl_comm_result, dxl_error = dxl_controller.packetHandler.write4ByteTxRx(
             dxl_controller.portHandler, self.dxl_id, ADDR_GOAL_POSITION, goal_pos
         )
@@ -214,6 +233,7 @@ class dxl_controller:
                 dxl_controller.portHandler, self.dxl_id, ADDR_PRESENT_POSITION
             )
         )
+        dxl_present_position = from_uint32_to_int32(dxl_present_position)
         return dxl_present_position
 
     def read_vel(self):
@@ -222,6 +242,8 @@ class dxl_controller:
                 dxl_controller.portHandler, self.dxl_id, ADDR_PRESENT_VELOCITY
             )
         )
+
+        dxl_present_velocity = from_uint32_to_int32(dxl_present_velocity)
         return dxl_present_velocity
 
     def close_port(self):

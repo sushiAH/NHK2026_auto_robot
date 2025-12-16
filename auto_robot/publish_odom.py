@@ -1,3 +1,8 @@
+"""twistをpublishする
+dynamixelのフィードバックデータをsubscribeして、odomをpublishする
+tfを出力する
+"""
+
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -32,9 +37,9 @@ class odom_publisher(Node):
 
         self.tf_broadcaster_ = TransformBroadcaster(self)
 
-        self.dt = 0.05  # [millis]
-        self.track_width = 0.325  # [m]
-        self.wheel_radius = 0.0275  # [m]
+        # robot parameter
+        self.track_width = 0.27  # [m]
+        self.wheel_radius = 0.05  # [m]
 
         self.x = 0.0
         self.y = 0.0
@@ -43,18 +48,19 @@ class odom_publisher(Node):
         self.last_time = self.get_clock().now()
 
         # timer callback の周期設定
+        self.dt = 0.01  # [seconds]
         self.timer = self.create_timer(self.dt, self.publish_odometry)
 
-        self.V_r = 0
-        self.V_l = 0
+        self.V_r = 0.0
+        self.V_l = 0.0
 
     def joy_callback(self, msg):
 
         axes_values = msg.axes
         buttons_values = msg.buttons
 
-        straight = axes_values[1] * 0.1
-        w = axes_values[0] * 0.1
+        straight = axes_values[1] * 0.2
+        w = axes_values[0] * 0.5
 
         twist = Twist()
         twist.linear.x = straight
@@ -63,8 +69,8 @@ class odom_publisher(Node):
         self.twist_publisher.publish(twist)
 
     def feedback_callback(self, msg):
-        self.V_r = msg.data[0]
-        self.V_l = msg.data[1]
+        self.V_r = -msg.data[0]
+        self.V_l = -msg.data[1]
 
     def publish_odometry(self):
 
@@ -76,7 +82,7 @@ class odom_publisher(Node):
         # x,y,thetaの算出
 
         v = (self.V_r + self.V_l) / 2.0
-        omega = (self.V_l - self.V_r) / self.track_width
+        omega = (self.V_r - self.V_l) / self.track_width
 
         dt_theta = omega * df_actual
 
@@ -101,8 +107,8 @@ class odom_publisher(Node):
         odom.child_frame_id = "base_link"
 
         # ロボットの位置と向きを設定
-        odom.pose.pose.position.x = self.x
-        odom.pose.pose.position.y = self.y
+        odom.pose.pose.position.x = float(self.x)
+        odom.pose.pose.position.y = float(self.y)
         odom.pose.pose.position.z = 0.0
 
         # クォータニオンへの変換
@@ -117,8 +123,8 @@ class odom_publisher(Node):
         odom.pose.pose.orientation.z = qz
         odom.pose.pose.orientation.w = qw
 
-        odom.twist.twist.linear.x = v
-        odom.twist.twist.angular.z = omega
+        odom.twist.twist.linear.x = float(v)
+        odom.twist.twist.angular.z = float(omega)
         # odomをパブリッシュ
 
         self.odom_publisher_.publish(odom)
@@ -129,8 +135,8 @@ class odom_publisher(Node):
         t.header.frame_id = "odom"
         t.child_frame_id = "base_link"
 
-        t.transform.translation.x = self.x
-        t.transform.translation.y = self.y
+        t.transform.translation.x = float(self.x)
+        t.transform.translation.y = float(self.y)
         t.transform.translation.z = 0.0
         t.transform.rotation.x = qx
         t.transform.rotation.y = qy
