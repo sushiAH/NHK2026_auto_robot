@@ -1,10 +1,10 @@
 amcl:
   ros__parameters:
     use_sim_time: False # シミュレーション時間を使用（実機の場合はFalseにする）
-    alpha1: 0.01 # オドメトリの回転成分のノイズ（回転→回転）
-    alpha2: 0.01 # オドメトリの並進成分のノイズ（並進→回転）
-    alpha3: 0.01 # オドメトリの並進成分のノイズ（並進→並進）
-    alpha4: 0.01 # オドメトリの回転成分のノイズ（回転→並進）
+    alpha1: 0.1 # オドメトリの回転成分のノイズ（回転→回転）
+    alpha2: 0.1 # オドメトリの並進成分のノイズ（並進→回転）
+    alpha3: 0.1 # オドメトリの並進成分のノイズ（並進→並進）
+    alpha4: 0.1 # オドメトリの回転成分のノイズ（回転→並進）
     alpha5: 0.0 # 全方向移動ロボット用（差動二輪なら0でOK）
     base_frame_id: "base_link" # ロボット本体の座標フレーム
     beam_skip_distance: 0.5 # ビームスキップ（無視）する距離の閾値
@@ -14,10 +14,10 @@ amcl:
     global_frame_id: "map" # 大域座標フレーム（地図座標）
     lambda_short: 0.1 # 尤度場の指数減衰パラメータ（短い読み取り値用）
     laser_likelihood_max_dist: 2.0 # 尤度計算に使用する障害物までの最大距離
-    laser_max_range: 10.0 # レーザースキャンの最大有効距離
+    laser_max_range: 20.0 # レーザースキャンの最大有効距離
     laser_min_range: 0.05 # レーザースキャンの最小有効距離
     laser_model_type: "likelihood_field" # センサーモデル（通常はこれ）
-    max_beams: 60 # パーティクルフィルタ更新に使うビーム数（多いと重い）
+    max_beams: 100 # パーティクルフィルタ更新に使うビーム数（多いと重い）
     max_particles: 2000 # パーティクルの最大数（位置推定の精度と負荷に影響）
     min_particles: 500 # パーティクルの最小数
     odom_frame_id: "odom" # オドメトリ座標フレーム
@@ -30,7 +30,7 @@ amcl:
     save_pose_rate: 0.5 # 推定位置を保存する頻度（Hz）
     sigma_hit: 0.2 # ヒットモデルの標準偏差
     tf_broadcast: true # map->odomのTFを配信するか（必須）
-    transform_tolerance: 1.0 # TF変換の遅延許容時間
+    transform_tolerance: 0.5 # TF変換の遅延許容時間
     update_min_a: 0.05 # 回転移動がこれ以上あったらAMCL更新（ラジアン）
     update_min_d: 0.05 # 並進移動がこれ以上あったらAMCL更新（メートル）
     z_hit: 0.5 # ヒット確率の重み
@@ -109,7 +109,7 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: False
-    controller_frequency: 20.0 # コントローラの実行周波数（Hz）。高いほど滑らかだが負荷増
+    controller_frequency: 30.0 # コントローラの実行周波数（Hz）。高いほど滑らかだが負荷増
     min_x_velocity_threshold: 0.001 # X方向速度の不感帯（これ以下は0とみなす）
     min_y_velocity_threshold: 0.5 # Y方向速度の不感帯
     min_theta_velocity_threshold: 0.001 # 回転速度の不感帯
@@ -128,8 +128,8 @@ controller_server:
     goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25 # 位置の許容誤差（m）。25cm以内なら到着
-      yaw_goal_tolerance: 0.25 # 向きの許容誤差（rad）
+      xy_goal_tolerance: 0.2 # 位置の許容誤差（m）。25cm以内なら到着
+      yaw_goal_tolerance: 0.3 # 向きの許容誤差（rad）
 
     # DWB parameters（デフォルトのローカルプランナー設定）
     FollowPath:
@@ -137,46 +137,47 @@ controller_server:
       debug_trajectory_details: True # デバッグ情報を出すか
       min_vel_x: 0.0 # 最小前進速度（後退しないなら0）
       min_vel_y: 0.0 # 最小横移動速度（差動二輪なら0）
-      max_vel_x: 0.2 # 最大前進速度（m/s）
+      max_vel_x: 0.1 # 最大前進速度（m/s）
       max_vel_y: 0.0 # 最大横移動速度
-      max_vel_theta: 1.0 # 最大旋回速度（rad/s）
+      max_vel_theta: 0.5 # 最大旋回速度（rad/s）
       min_speed_xy: 0.0 # 並進速度の絶対値の最小
-      max_speed_xy: 0.1 # 並進速度の絶対値の最大（※ここが低いと遅くなる）
+      max_speed_xy: 0.15 # 並進速度の絶対値の最大（※ここが低いと遅くなる）
       min_speed_theta: 0.0 # 旋回速度の絶対値の最小
-      acc_lim_x: 0.5 # X方向加速度制限
+      acc_lim_x: 0.7 # X方向加速度制限
       acc_lim_y: 0.0 # Y方向加速度制限
-      acc_lim_theta: 1.6 # 回転加速度制限
-      decel_lim_x: -1.0 # X方向減速度制限
+      acc_lim_theta: 0.5 # 回転加速度制限
+      decel_lim_x: -0.5 # X方向減速度制限
       decel_lim_y: 0.0 # Y方向減速度制限
-      decel_lim_theta: -1.6 # 回転減速度制限
+      decel_lim_theta: -1.0 # 回転減速度制限
       vx_samples: 20 # 速度探索のサンプル数（X方向）
       vy_samples: 5 # 速度探索のサンプル数（Y方向）
-      vtheta_samples: 20 # 速度探索のサンプル数（回転）
-      sim_time: 1.7 # シミュレーション時間（何秒先まで予測して経路を決めるか）
+      vtheta_samples: 40 # 速度探索のサンプル数（回転）
+      sim_time: 1.5 # シミュレーション時間（何秒先まで予測して経路を決めるか）
       linear_granularity: 0.05 # 直線移動の粒度
       angular_granularity: 0.025 # 回転移動の粒度
       transform_tolerance: 0.05 # TF変換許容誤差
       xy_goal_tolerance: 0.01 # DWB内部でのゴール許容誤差
-      trans_stopped_velocity: 0.25 # 停止判定となる並進速度
+      trans_stopped_velocity: 0.03 # 停止判定となる並進速度
       short_circuit_trajectory_evaluation: True # 最適解が見つかったら評価を打ち切るか
       stateful: True
       # 評価関数（Critics）。ここがロボットの挙動を決める重要部分
       critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      PreferForward.scale: 10.0
       BaseObstacle.scale: 0.02 # 障害物回避の優先度
-      PathAlign.scale: 32.0 # パス（進行方向）への追従優先度
+      PathAlign.scale: 5.0 # パス（進行方向）への追従優先度
       PathAlign.forward_point_distance: 0.1 # パス追従の参照点距離
-      GoalAlign.scale: 24.0 # ゴール方向への追従優先度
+      GoalAlign.scale: 32.0 # ゴール方向への追従優先度
       GoalAlign.forward_point_distance: 0.1 # ゴール追従の参照点距離
       PathDist.scale: 32.0 # パスからの距離（ズレ）を減らす優先度
-      GoalDist.scale: 24.0 # ゴールまでの距離を減らす優先度
+      GoalDist.scale: 32.0 # ゴールまでの距離を減らす優先度
       RotateToGoal.scale: 32.0 # ゴールでの回転調整の優先度
-      RotateToGoal.slowing_factor: 5.0 # ゴール付近での減速係数
+      RotateToGoal.slowing_factor: 1.5 # ゴール付近での減速係数
       RotateToGoal.lookahead_time: -1.0 # 回転調整時の先読み時間
 
 local_costmap:
   local_costmap:
     ros__parameters:
-      update_frequency: 5.0 # コストマップの更新頻度（Hz）
+      update_frequency: 10.0 # コストマップの更新頻度（Hz）
       publish_frequency: 2.0 # コストマップの配信頻度（Hz）
       global_frame: odom # ローカルマップの座標系（通常odom）
       robot_base_frame: base_link # ロボット基準座標系
@@ -184,9 +185,9 @@ local_costmap:
       rolling_window: true # ロボットを中心に地図を動かすか
       width: 3 # ローカルマップの幅（m）
       height: 3 # ローカルマップの高さ（m）
-      resolution: 0.05 # グリッドの解像度（m/cell）
+      resolution: 0.02 # グリッドの解像度（m/cell）
       # フットプリント（ロボットの形状）。頂点座標をリストで指定
-      footprint: "[[0.3,-0.21],[0.3,0.21],[-0.3,0.21],[-0.3,-0.21]]"
+      footprint: "[[0.3,-0.215],[0.3,0.215],[-0.3,0.215],[-0.3,-0.215]]"
       plugins: ["obstacle_layer", "inflation_layer"] # 使用するレイヤー
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -220,7 +221,7 @@ global_costmap:
       robot_base_frame: base_link
       use_sim_time: False
       # グローバルプランニング用のフットプリント
-      footprint: "[[0.3,-0.21],[0.3,0.21],[-0.3,0.21],[-0.3,-0.21]]"
+      footprint: "[[0.3,-0.215],[0.3,0.215],[-0.3,0.215],[-0.3,-0.215]]"
       resolution: 0.05
       track_unknown_space: true # 未知領域（Unknown）を考慮するか
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"] # 静的地図＋動的障害物＋膨張

@@ -12,6 +12,7 @@ import numpy as np
 from geometry_msgs.msg import TransformStamped, Twist
 from tf2_ros import TransformBroadcaster
 from nav_msgs.msg import Odometry
+
 from my_robot_interfaces.msg import DynaFeedback
 
 
@@ -38,8 +39,8 @@ class odom_publisher(Node):
         self.tf_broadcaster_ = TransformBroadcaster(self)
 
         # robot parameter
-        self.track_width = 0.27  # [m]
-        self.wheel_radius = 0.05  # [m]
+        self.track_width = 0.325  # [m]
+        self.wheel_radius = 0.025
 
         self.x = 0.0
         self.y = 0.0

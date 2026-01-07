@@ -18,9 +18,7 @@ def generate_launch_description():
 
     # nav2
     nav2_params_path = os.path.join(package_dir, "config", "nav2_params.yaml")
-    map_file_path = (
-        "/home/aratahorie/NHK2026_auto_robot/src/auto_robot/map/map_1765826754.yaml"
-    )
+    map_file_path = ""
 
     filter_params = os.path.join(package_dir, "config", "laser_filter.yaml")
 
@@ -28,13 +26,13 @@ def generate_launch_description():
 
     # setting node
     node1 = Node(
-        package="auto_robot",  # package_name
+        package="auto_minicar",  # package_name
         executable="odom_publisher",  # node_name
         output="screen",
     )
 
     node2 = Node(
-        package="auto_robot",
+        package="auto_minicar",
         executable="twist_subscriber",
     )
 
