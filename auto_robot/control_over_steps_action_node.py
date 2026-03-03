@@ -41,7 +41,7 @@ from rclpy.action import ActionServer, CancelResponse
 
 #自作ライブラリ
 from auto_robot_interfaces.action import OverSteps
-from auto_robot_interfaces.msg import DynaFeedback, DynaTarget
+from dyna_interfaces.msg import DynaFeedback, DynaTarget
 import os
 import sys
 
@@ -124,8 +124,10 @@ class OverStepsActionServer(Node):
         move_motor(0)
 
         #init_dynamixel
-        self.publish_dyna_extpos(4, 600)
-        self.publish_dyna_extpos(5, 600)
+        self.publish_dyna_extpos(4, 1700)
+        self.publish_dyna_extpos(5, 1700)
+        # self.publish_dyna_extpos(4, calc_frame_height(230))
+        # self.publish_dyna_extpos(5, calc_frame_height(230))
 
     def publish_dyna_extpos(self, id, target):
         msg = DynaTarget()
